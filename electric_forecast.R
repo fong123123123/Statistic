@@ -1,4 +1,7 @@
 library(forecast)
+library(tseries)
+
+#Step 0
 data <- read.csv("Electric_Production.csv")
 data()
 
@@ -14,11 +17,24 @@ train
 test
 autoplot(train) + autolayer(test)
 
-#log transform
+#Step 2
+#transformation
 data_transform <- log(data)
 data_transform <- ts(data_transform, frequency = 12, start = c(1985,1))
 plot(data_transform, main = "Time Series Plot (Log Transform)", xlab = "Time", ylab = "Value")
 
+#Step 3a Stationarize the Series
+#Differencing
+# First-order differencing
+diff_data <- diff(data_transform)
+
+# Plot differenced data
+plot(diff_data, main = "Differenced Time Series", xlab = "Time", ylab = "Differences")
+
+#Step 3b Check the stationarity of the series
+adf.test(diff_data)
+
+#Step 4
 #auto arima model
 arima_model <- auto.arima(train)
 summary(arima_model)
@@ -35,3 +51,4 @@ ACF$acf_residuals
 #ACF
 acf <- acf(train, main="Correlogram for the Electric Dataset")
 ACF$acf
+
