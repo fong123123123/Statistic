@@ -1,5 +1,6 @@
 library(forecast)
 library(tseries)
+library(forecast)
 
 #Step 0
 data <- read.csv("Electric_Production.csv")
@@ -39,10 +40,11 @@ plot(diff_data, main = "Differenced Time Series", xlab = "Time", ylab = "Differe
 plot(seasonalDiff)
 
 #Step 3b Check the stationarity of the series
-adf.test(diff_data)
 adf.test(train)
 
-#Step 4
+#Step 4 ETS AND ARIMA
+arima_model <- arima(train, order = c(2, 0, 1), seasonal = list(order = c(0, 1, 1), period = 12))
+
 #residuals of auto arima model
 residuals <- residuals(arima_model)
 residuals
@@ -53,27 +55,50 @@ pacf_residuals <-pacf(residuals, main = "PACF of Residuals")
 
 #PACF && ACF of Original Data
 acf <- acf(train, main="Correlogram for the Electric Dataset")
-pacf <- pacf(train, main = "Autocorrelogram")
+pacf <- pacf(train, main = "Partial AutoCorrelation")
 
 #Step 6 Check residual
 #Box-Pierce Q 
 Box.test(residuals)
+adf.test(residuals)
 
 #Differencing
 
-#Step 7
+#Step 7 Compare ETS AND Arima
 #Arima model
-#arima_model <- arima(train, c(2,0,1), order = c(0,1,1), 12)
-arima_model <- arima(train, order = c(2, 0, 1), seasonal = list(order = c(0, 1, 1), period = 12))
-summary(arima_model)
+sarima_model <- arima(train, c(1, 0, 0), seasonal = list(order = c(2, 1, 0), period = 12))
+summary(sarima_model)
+coef(sarima_model)
+Box.test(sarima_model$residual, 12)
+acf_ <-acf(sarima_model$residuals, main="ACF of Arima(Manually Guess) Residuals")
 
-#accuracy(train)
+forecast_value <- forecast(sarima_model, h=120)
+autoplot(forecast_value) + autolayer(fitted(sarima_model), series = "Fitted")
+
+error = test - forecast_value$mean
+mse = mean(error*error)
+print(mse)
+
+rmse = sqrt(mse)
+print(rmse)
 
 #ARIMA using auto.arima
 arima_model <- auto.arima(train, ic= "aic", trace = TRUE)
 summary(arima_model)
+coef(arima_model)
+Box.test(arima_model$residuals)
+acf_ <-acf(arima_model$residuals, main="ACF of Arima(Auto) Residuals")
+
+forecast_values <- forecast(arima_model, h=120)
+autoplot(forecast_values) + autolayer(fitted(sarima_model), series = "Fitted")
+error = test - forecast_values$mean
+mse = mean(error*error)
+print(mse)
+
+rmse = sqrt(mse)
+print(rmse)
+
 
 #Step 8 Form Equation for the Best Model
-
 
 
