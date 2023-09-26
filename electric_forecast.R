@@ -1,6 +1,7 @@
 library(forecast)
 library(tseries)
 library(forecast)
+library(lmtest)
 
 #Step 0
 data <- read.csv("Electric_Production.csv")
@@ -65,13 +66,24 @@ adf.test(residuals)
 #Differencing
 
 #Step 7 Compare ETS AND Arima
-#Arima model
+# 1.Arima model
 sarima_model <- arima(train, c(1, 0, 0), seasonal = list(order = c(2, 1, 0), period = 12))
 summary(sarima_model)
-coef(sarima_model)
+
+
+#Step 6: Diagnostic Checking (Randomness)
 Box.test(sarima_model$residual, 12)
+
+#Step 8(a): Form Equation for the Best Model
 acf_ <-acf(sarima_model$residuals, main="ACF of Arima(Manually Guess) Residuals")
 
+#Step 8b Estimate the model’s coefficients
+coef(sarima_model)
+
+#Step 8(c): Test the significance of the coefficients
+coeftest(sarima_model)
+
+#Step 9: Forecasting
 forecast_value <- forecast(sarima_model, h=120)
 autoplot(forecast_value) + autolayer(fitted(sarima_model), series = "Fitted")
 
@@ -82,13 +94,23 @@ print(mse)
 rmse = sqrt(mse)
 print(rmse)
 
-#ARIMA using auto.arima
+# 2.ARIMA using auto.arima
 arima_model <- auto.arima(train, ic= "aic", trace = TRUE)
 summary(arima_model)
-coef(arima_model)
-Box.test(arima_model$residuals)
+
+#Step 6: Diagnostic Checking (Randomness)
+Box.test(arima_model$residuals, lag=12)
+
+#Step 8(a): Form Equation for the Best Model
 acf_ <-acf(arima_model$residuals, main="ACF of Arima(Auto) Residuals")
 
+#Step 8b Estimate the model’s coefficients
+coef(arima_model)
+
+#Step 8(c): Test the significance of the coefficients
+coeftest(arima_model)
+
+#Step 9: Forecasting
 forecast_values <- forecast(arima_model, h=120)
 autoplot(forecast_values) + autolayer(fitted(sarima_model), series = "Fitted")
 error = test - forecast_values$mean
@@ -99,6 +121,27 @@ rmse = sqrt(mse)
 print(rmse)
 
 
-#Step 8 Form Equation for the Best Model
+# 3.ETS
+fit <- ets(train)
+summary(fit)
 
+#Step 6: Diagnostic Checking (Randomness)
+Box.test(fit$residuals, lag=12)
 
+#Step 8(a): Form Equation for the Best Model
+acf_ <-acf(fit$residuals, main="ACF of Fit(ETS) Residuals")
+
+#Step 8b Estimate the model’s coefficients
+coef(fit)
+
+#Step 9: Forecasting
+forecast_values1 <- forecast(fit, h=120)
+autoplot(forecast_values1) + autolayer(fitted(fit), series = "Fitted")
+error = test - forecast_values1$mean
+mse = mean(error*error)
+print(mse)
+
+rmse = sqrt(mse)
+print(rmse)
+
+# 4. Holt-Winters Model
