@@ -145,3 +145,42 @@ rmse = sqrt(mse)
 print(rmse)
 
 # 4. Holt-Winters Model
+
+# Fit an additive Holt-Winters model
+holtwinter_add <- HoltWinters(train, seasonal = "additive")
+summary(holtwinter_add)
+
+# Extract the residuals
+residuals_additive <- resid(holtwinter_add)
+
+# analyze the residuals
+coef(holtwinter_add)
+
+print(residuals_additive)
+
+plot(residuals_additive, main = "Residuals of Holt-Winters Model", xlab = "Time", ylab = "Residuals")
+
+acf(residuals_additive, main = "ACF of Residuals of Holt-Winters Model")
+pacf(residuals_additive, main = "PACF of Residuals of Holt-Winters Model")
+
+#Step 6: Diagnostic Checking (Randomness)
+Box.test(residuals(holtwinter_add), lag=12, type="Ljung-Box")
+
+#Step 9: Forecasting
+forecast_values <- forecast(holtwinter_add, h = 120)
+autoplot(forecast_values) + autolayer(fitted(holtwinter_add), series = "Fitted")
+print(forecast_values)
+
+plot(forecast_values, main = "Holt-Winters Forecast", xlab = "Time", ylab = "Value")
+lines(test, col = "red") 
+
+actual_values <- test  # Replace 'test' with your actual test data
+forecasted_values <- forecast_values$mean
+mae <- mean(abs(actual_values - forecasted_values))
+mse <- mean((actual_values - forecasted_values)^2)
+rmse <- sqrt(mse)
+
+# Print the accuracy metrics
+cat("MAE:", mae, "\n")
+cat("MSE:", mse, "\n")
+cat("RMSE:", rmse, "\n")
