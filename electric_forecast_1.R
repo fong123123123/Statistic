@@ -2,6 +2,7 @@
 library(forecast)
 library(tseries)
 library(lmtest)
+library(seasonal)
 
 
 #Step 0
@@ -19,7 +20,11 @@ autoplot(train) + autolayer(test)
 #======================================================
 #Step 1 (Visualise Time Series)
 #plot data 
-plot(data, main = "Time Series Plot", xlab = "Time", ylab = "Value")
+plot(data, main = "Time Series Plot", xlab = "Time", ylab = "Value") 
+
+#check seasonal
+ggseasonplot(data, year.labels=TRUE, year.labels.left=TRUE) 
+  
 
 #Decomposition of Training Time Series
 decomposed_data <- decompose(train)
@@ -39,14 +44,18 @@ pacf(train)
 #======================================================
 #Step 2 (Transformation)
 #Log transform
-train <- log(train)
-train <- ts(train, frequency = 12, start = c(1985,1))
-plot(train, main = "Time Series Plot (Log Transform)", xlab = "Time", ylab = "Value")
+train_log <- log(train)
+train_log <- ts(train_log, frequency = 12, start = c(1985,1))
+plot(train_log, main = "Time Series Plot (Log Transform)", xlab = "Time", ylab = "Value")
+decomposed_data <- decompose(train_log)
+plot(decomposed_data)
 #======================================================
 #Step 3 (Stationarize the Series)
 #seasonal diff
-seasonalDiff <- diff(train, lag= 12)
+seasonalDiff <- diff(train_log, lag= 12)
 plot(seasonalDiff)
+decomposed_data <- decompose(seasonalDiff)
+plot(decomposed_data)
 acf(seasonalDiff)
 pacf(seasonalDiff)
 
@@ -101,12 +110,11 @@ autoplot(forecast(arima_model))
 
 #======================================================
 #Step 8a (Form Equation for Best Model)
-
+equation <- auto_arima_model$call
 
 #======================================================
 #Step 8b (Estimate model coefficient)
-arima(data, order = c(0,1,1), seasonal = list(order=c(0,1,1), period = 12))
-
+coef(auto_arima_model)
 #======================================================
 #Step 8c (Test significance of the coefficient)
 #fit <- arima(data, order = c(0,1,1), seasonal = list(order=c(0,1,1), period = 12))
