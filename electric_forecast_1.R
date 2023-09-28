@@ -21,7 +21,7 @@ autoplot(train) + autolayer(test)
 #plot data 
 plot(data, main = "Time Series Plot", xlab = "Time", ylab = "Value")
 
-#Decomposition of Time Series
+#Decomposition of Training Time Series
 decomposed_data <- decompose(train)
 plot(decomposed_data)
 acf(train)
@@ -42,7 +42,6 @@ pacf(train)
 train <- log(train)
 train <- ts(train, frequency = 12, start = c(1985,1))
 plot(train, main = "Time Series Plot (Log Transform)", xlab = "Time", ylab = "Value")
-
 #======================================================
 #Step 3 (Stationarize the Series)
 #seasonal diff
@@ -72,6 +71,8 @@ summary(ets_model)
 summary(arima_model)
 summary(auto_arima_model)
 
+
+
 #======================================================
 #Step 6 (Diagnotic Checking)
 checkresiduals(ets_model)
@@ -85,6 +86,17 @@ accuracy(ets_model)
 accuracy(arima_model)
 accuracy(auto_arima_model)
 accuracy(hw_model_additive)
+
+#Ljung-Box Test 
+#**(p value bigger than 0.05 is better, indicating there a white noise in residual)
+#**H0: Model does not show lack of fit
+#**H1: Model does show a lack of fit
+Box.test(resid(ets_model),type="Ljung",lag=12)
+Box.test(resid(arima_model),type="Ljung",lag=12)
+Box.test(resid(auto_arima_model),type="Ljung",lag=12)
+
+autoplot(forecast(arima_model))
+
 
 
 #======================================================
@@ -101,3 +113,6 @@ arima(data, order = c(0,1,1), seasonal = list(order=c(0,1,1), period = 12))
 coeftest(auto_arima_model)
 
 #======================================================
+
+#Reference 
+#https://www.statisticshowto.com/ljung-box-test/#:~:text=The%20null%20hypothesis%20of%20the,time%20series%20isn't%20autocorrelated.
