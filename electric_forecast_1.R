@@ -10,7 +10,6 @@ data <- read.csv("Electric_Production.csv")
 data <- ts(data[,2], frequency = 12, start = c(1985,1))
 
 
-
 #train test split
 train <- head(data, round(length(data) * 0.70))
 h <- length(data) - length(train)
@@ -24,14 +23,13 @@ plot(data, main = "Time Series Plot", xlab = "Time", ylab = "Value")
 
 #check seasonal
 ggseasonplot(data, year.labels=TRUE, year.labels.left=TRUE) 
-  
+
 
 #Decomposition of Training Time Series
 decomposed_data <- decompose(train)
 plot(decomposed_data)
 acf(train)
 pacf(train)
-
 
 # Analysis for Residual
 #decomposed_data$random <- na.omit(decomposed_data$random)
@@ -75,11 +73,14 @@ auto_arima_model <- auto.arima(train)
 #Holt-Winters model
 hw_model_additive <- HoltWinters(train, seasonal = "additive")
 
+tbats_model <- tbats(train)
+
 #summary 
 summary(ets_model)
 summary(arima_model)
 summary(auto_arima_model)
-
+summary(hw_model_additive)
+summary(tbats_model)
 
 
 #======================================================
@@ -88,13 +89,17 @@ checkresiduals(ets_model)
 checkresiduals(arima_model)
 checkresiduals(auto_arima_model)
 checkresiduals(hw_model_additive)
+checkresiduals(tbats_model)
 
 #======================================================
 #Step 7 (Determine Best Model)
 accuracy(ets_model)
 accuracy(arima_model)
 accuracy(auto_arima_model)
-accuracy(hw_model_additive)
+accuracy(tbats_model)
+
+forecast_hw_model_additive <- forecast(hw_model_additive, h=120)
+accuracy(forecast_hw_model_additive)
 
 #Ljung-Box Test 
 #**(p value bigger than 0.05 is better, indicating there a white noise in residual)
@@ -103,9 +108,10 @@ accuracy(hw_model_additive)
 Box.test(resid(ets_model),type="Ljung",lag=12)
 Box.test(resid(arima_model),type="Ljung",lag=12)
 Box.test(resid(auto_arima_model),type="Ljung",lag=12)
+Box.test(resid(hw_model_additive),type="Ljung",lag=12)
+Box.test(resid(tbats_model),type="Ljung",lag=12)
 
 autoplot(forecast(arima_model))
-
 
 
 #======================================================
