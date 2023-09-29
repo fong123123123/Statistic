@@ -54,11 +54,12 @@ seasonalDiff <- diff(train_log, lag= 12)
 plot(seasonalDiff)
 decomposed_data <- decompose(seasonalDiff)
 plot(decomposed_data)
-acf(seasonalDiff)
-pacf(seasonalDiff)
+acf(seasonalDiff,lag=24)
+pacf(seasonalDiff,lag = 24)
 
 #Check Non-Seasonal Stationarity
 adf.test(seasonalDiff)
+kpss.test(seasonalDiff)
 
 train <- seasonalDiff
 
@@ -67,8 +68,9 @@ train <- seasonalDiff
 #ETS model
 ets_model <- ets(train)
 #Arima model
-arima_model <- arima(train, order = c(2, 0, 1), seasonal = list(order = c(0, 1, 1), period = 12))
+arima_model <- arima(train, order = c(2, 0, 3), seasonal = list(order = c(2, 1, 1), period = 12))
 auto_arima_model <- auto.arima(train)
+
 
 #Holt-Winters model
 hw_model_additive <- HoltWinters(train, seasonal = "additive")
@@ -97,7 +99,7 @@ accuracy(ets_model)
 accuracy(arima_model)
 accuracy(auto_arima_model)
 accuracy(tbats_model)
-
+forecast(auto_arima_model)
 forecast_hw_model_additive <- forecast(hw_model_additive, h=120)
 accuracy(forecast_hw_model_additive)
 
@@ -111,20 +113,23 @@ Box.test(resid(auto_arima_model),type="Ljung",lag=12)
 Box.test(resid(hw_model_additive),type="Ljung",lag=12)
 Box.test(resid(tbats_model),type="Ljung",lag=12)
 
-autoplot(forecast(arima_model))
 
-
-#======================================================
-#Step 8a (Form Equation for Best Model)
-equation <- auto_arima_model$call
+# Plot the SARIMA forecasts and actual data
+sarima_forecasts <- forecast(arima_model, h = length(test))
+plot(sarima_forecasts, main = "SARIMA Forecast vs. Actual")
+lines(test, col = "red")
+legend("topright", legend = c("Forecast", "Actual"), col = c("blue", "red"),lty = 1)
+accuracy(sarima_forecasts,test)
+autoarima_forcast <- forecast(auto_arima_model, h = length(test))
+accuracy(autoarima_forcast,test)
 
 #======================================================
 #Step 8b (Estimate model coefficient)
-coef(auto_arima_model)
+coef(arima_model)
 #======================================================
 #Step 8c (Test significance of the coefficient)
 #fit <- arima(data, order = c(0,1,1), seasonal = list(order=c(0,1,1), period = 12))
-coeftest(auto_arima_model)
+coeftest(arima_model)
 
 #======================================================
 
