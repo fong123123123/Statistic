@@ -25,11 +25,11 @@ plot(data, main = "Time Series Plot", xlab = "Time", ylab = "Value")
 ggseasonplot(data, year.labels=TRUE, year.labels.left=TRUE) 
 
 
-#Decomposition of Training Time Series
-decomposed_data <- decompose(train)
+#Decomposition of Time Series
+decomposed_data <- decompose(data)
 plot(decomposed_data)
-acf(train)
-pacf(train)
+acf(data)
+pacf(data)
 
 # Analysis for Residual
 #decomposed_data$random <- na.omit(decomposed_data$random)
@@ -42,33 +42,35 @@ pacf(train)
 #======================================================
 #Step 2 (Transformation)
 #Log transform
-train_log <- log(train)
-train_log <- ts(train_log, frequency = 12, start = c(1985,1))
-plot(train_log, main = "Time Series Plot (Log Transform)", xlab = "Time", ylab = "Value")
-decomposed_data <- decompose(train_log)
-plot(decomposed_data)
+#train_log <- log(train)
+#train_log <- ts(train_log, frequency = 12, start = c(1985,1))
+#plot(train_log, main = "Time Series Plot (Log Transform)", xlab = "Time", ylab = "Value")
+#decomposed_data <- decompose(train_log)
+#plot(decomposed_data)
 #======================================================
 #Step 3 (Stationarize the Series)
 #seasonal diff
-seasonalDiff <- diff(train_log, lag= 12)
+seasonalDiff <- diff(data, lag= 12)
 plot(seasonalDiff)
 decomposed_data <- decompose(seasonalDiff)
 plot(decomposed_data)
-acf(seasonalDiff,lag=24)
-pacf(seasonalDiff,lag = 24)
+acf(seasonalDiff)
+pacf(seasonalDiff)
 
 #Check Non-Seasonal Stationarity
 adf.test(seasonalDiff)
 kpss.test(seasonalDiff)
 
-train <- seasonalDiff
+#train <- seasonalDiff
 
 #======================================================
 #Step 4 (ETS, Arima model)
 #ETS model
 ets_model <- ets(train)
 #Arima model
-arima_model <- arima(train, order = c(2, 0, 3), seasonal = list(order = c(2, 1, 1), period = 12))
+arima_model <- arima(train, order = c(3, 0, 4), seasonal = list(order = c(2,1,1), period = 12))
+
+
 auto_arima_model <- auto.arima(train)
 
 
@@ -99,9 +101,19 @@ accuracy(ets_model)
 accuracy(arima_model)
 accuracy(auto_arima_model)
 accuracy(tbats_model)
-forecast(auto_arima_model)
-forecast_hw_model_additive <- forecast(hw_model_additive, h=120)
+
+forecast_ets_model <- forecast(ets_model,h = length(test))
+forecast_arima_model <-forecast(arima_model,h = length(test))
+forecast_auto_arima_model <-forecast(auto_arima_model,h = length(test))
+forecast_hw_model_additive <-forecast(hw_model_additive,h = length(test))
+forecast_tbats_model <-forecast(tbats_model,h = length(test))
+
+accuracy(forecast_ets_model)
+accuracy(forecast_arima_model)
+accuracy(forecast_auto_arima_model)
 accuracy(forecast_hw_model_additive)
+accuracy(forecast_tbats_model)
+
 
 #Ljung-Box Test 
 #**(p value bigger than 0.05 is better, indicating there a white noise in residual)
@@ -130,8 +142,8 @@ coef(arima_model)
 #Step 8c (Test significance of the coefficient)
 #fit <- arima(data, order = c(0,1,1), seasonal = list(order=c(0,1,1), period = 12))
 coeftest(arima_model)
-
 #======================================================
 
 #Reference 
 #https://www.statisticshowto.com/ljung-box-test/#:~:text=The%20null%20hypothesis%20of%20the,time%20series%20isn't%20autocorrelated.
+
