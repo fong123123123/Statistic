@@ -50,6 +50,8 @@ pacf(data)
 #======================================================
 #Step 3 (Stationarize the Series)
 #seasonal diff
+
+
 seasonalDiff <- diff(data, lag= 12)
 plot(seasonalDiff)
 decomposed_data <- decompose(seasonalDiff)
@@ -61,30 +63,26 @@ pacf(seasonalDiff)
 adf.test(seasonalDiff)
 kpss.test(seasonalDiff)
 
-#train <- seasonalDiff
-
 #======================================================
 #Step 4 (ETS, Arima model)
 #ETS model
 ets_model <- ets(train)
+
 #Arima model
 arima_model <- arima(train, order = c(3, 0, 4), seasonal = list(order = c(2,1,1), period = 12))
-
-
 auto_arima_model <- auto.arima(train)
-
 
 #Holt-Winters model
 hw_model_additive <- HoltWinters(train, seasonal = "additive")
 
-tbats_model <- tbats(train)
+
 
 #summary 
 summary(ets_model)
 summary(arima_model)
 summary(auto_arima_model)
 summary(hw_model_additive)
-summary(tbats_model)
+
 
 
 #======================================================
@@ -93,21 +91,19 @@ checkresiduals(ets_model)
 checkresiduals(arima_model)
 checkresiduals(auto_arima_model)
 checkresiduals(hw_model_additive)
-checkresiduals(tbats_model)
+
 
 #======================================================
 #Step 7 (Determine Best Model)
 accuracy(ets_model)
 accuracy(arima_model)
 accuracy(auto_arima_model)
-accuracy(tbats_model)
 
 forecast_ets_model <- forecast(ets_model,h = length(test))
 forecast_arima_model <-forecast(arima_model,h = length(test))
 forecast_auto_arima_model <-forecast(auto_arima_model,h = length(test))
 forecast_hw_model_additive <-forecast(hw_model_additive,h = length(test))
-forecast_tbats_model <-forecast(tbats_model,h = length(test))
-
+ 
 accuracy(forecast_ets_model)
 accuracy(forecast_arima_model)
 accuracy(forecast_auto_arima_model)
