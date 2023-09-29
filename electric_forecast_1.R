@@ -73,15 +73,13 @@ arima_model <- arima(train, order = c(3, 0, 4), seasonal = list(order = c(2,1,1)
 auto_arima_model <- auto.arima(train)
 
 #Holt-Winters model
-hw_model_additive <- HoltWinters(train, seasonal = "additive")
-
-
+hw_model_multiplicative <- HoltWinters(train, seasonal = "multiplicative")
 
 #summary 
 summary(ets_model)
 summary(arima_model)
 summary(auto_arima_model)
-summary(hw_model_additive)
+summary(hw_model_multiplicative)
 
 
 
@@ -90,7 +88,7 @@ summary(hw_model_additive)
 checkresiduals(ets_model)
 checkresiduals(arima_model)
 checkresiduals(auto_arima_model)
-checkresiduals(hw_model_additive)
+checkresiduals(hw_model_multiplicative)
 
 
 #======================================================
@@ -102,13 +100,12 @@ accuracy(auto_arima_model)
 forecast_ets_model <- forecast(ets_model,h = length(test))
 forecast_arima_model <-forecast(arima_model,h = length(test))
 forecast_auto_arima_model <-forecast(auto_arima_model,h = length(test))
-forecast_hw_model_additive <-forecast(hw_model_additive,h = length(test))
+forecast_hw_model_multiplicative <-forecast(hw_model_multiplicative,h = length(test))
  
 accuracy(forecast_ets_model)
 accuracy(forecast_arima_model)
 accuracy(forecast_auto_arima_model)
-accuracy(forecast_hw_model_additive)
-accuracy(forecast_tbats_model)
+accuracy(forecast_hw_model_multiplicative)
 
 
 #Ljung-Box Test 
@@ -118,7 +115,7 @@ accuracy(forecast_tbats_model)
 Box.test(resid(ets_model),type="Ljung",lag=12)
 Box.test(resid(arima_model),type="Ljung",lag=12)
 Box.test(resid(auto_arima_model),type="Ljung",lag=12)
-Box.test(resid(hw_model_additive),type="Ljung",lag=12)
+Box.test(resid(hw_model_multiplicative),type="Ljung",lag=12)
 Box.test(resid(tbats_model),type="Ljung",lag=12)
 
 
